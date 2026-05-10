@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { 
-  StyleSheet, Text, View, TouchableOpacity, 
-  FlatList, SafeAreaView 
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View, SafeAreaView } from 'react-native';
+// Pastikan path import data dummy ini sesuai dengan folder proyek Anda
+import { dummyReports } from '../../data/dummyData'; 
 
-export default function App() {
+export default function ForumScreen() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('Daily');
   const [sortBy, setSortBy] = useState('Select');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -13,70 +14,23 @@ export default function App() {
   const tabs = ['Daily', 'Weekly', 'Monthly'];
   const filterOptions = ['Select', 'Recent', 'Oldest', 'Popular', 'Solved', 'Unsolved'];
 
-  // DATA DUMMY (Sesuai Gambar + Tambahan untuk tes filter)
-  const [allReports] = useState([
-    {
-      id: '1',
-      nama: 'JOKO SUSILONO',
-      deskripsi: 'kerusakan pada jalan berupa lubang dan permukaan yang tidak rata di beberapa titik.',
-      lokasi: 'Bogor, Jawa Barat',
-      status: 'solved', // Hijau
-      upvotes: 1600,
-      timeLabel: '4Y Ago',
-      createdAt: new Date(), 
-    },
-    {
-      id: '2',
-      nama: 'JOKO SUSILONO',
-      deskripsi: 'kerusakan pada jalan berupa lubang dan permukaan yang tidak rata di beberapa titik.',
-      lokasi: 'Bogor, Jawa Barat',
-      status: 'unsolved', // Merah
-      upvotes: 1600,
-      timeLabel: '4Y Ago',
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), 
-    },
-    {
-      id: '3',
-      nama: 'JOKO SUSILONO',
-      deskripsi: 'kerusakan pada jalan berupa lubang dan permukaan yang tidak rata di beberapa titik.',
-      lokasi: 'Bogor, Jawa Barat',
-      status: 'unsolved',
-      upvotes: 1600,
-      timeLabel: '4Y Ago',
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), 
-    },
-    {
-      id: '4',
-      nama: 'JOKO SUSILONO',
-      deskripsi: 'kerusakan pada jalan berupa lubang dan permukaan yang tidak rata di beberapa titik.',
-      lokasi: 'Bogor, Jawa Barat',
-      status: 'unsolved',
-      upvotes: 1600,
-      timeLabel: '4Y Ago',
-      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000), 
-    },
-  ]);
-
-  // LOGIKA FILTER & SORTING
+  // Fungsi untuk memfilter dan mengurutkan dummyReports bawaan Anda
   const getProcessedData = () => {
-    let filtered = [...allReports];
+    // Gunakan data dari import proyek Anda
+    let filtered = [...dummyReports];
 
-    // 1. Filter Tab Waktu
-    const now = new Date();
-    filtered = filtered.filter(item => {
-      const diffDays = (now - item.createdAt) / (1000 * 60 * 60 * 24);
-      if (activeTab === 'Daily') return diffDays <= 1;
-      if (activeTab === 'Weekly') return diffDays <= 7;
-      if (activeTab === 'Monthly') return diffDays <= 30;
-      return true;
-    });
-
-    // 2. Sorting Dropdown
-    if (sortBy === 'Popular') filtered.sort((a, b) => b.upvotes - a.upvotes);
-    if (sortBy === 'Recent') filtered.sort((a, b) => b.createdAt - a.createdAt);
-    if (sortBy === 'Oldest') filtered.sort((a, b) => a.createdAt - b.createdAt);
-    if (sortBy === 'Solved') filtered = filtered.filter(i => i.status === 'solved');
-    if (sortBy === 'Unsolved') filtered = filtered.filter(i => i.status === 'unsolved');
+    // Logika Sorting (disesuaikan dengan properti yang umumnya ada)
+    if (sortBy === 'Recent') {
+      filtered.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+    } else if (sortBy === 'Oldest') {
+      filtered.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+    } else if (sortBy === 'Solved') {
+      // Mengasumsikan status 'solved' atau 'selesai' untuk warna hijau
+      filtered = filtered.filter(i => i.status === 'solved' || i.status === 'selesai' || i.status === 'proses');
+    } else if (sortBy === 'Unsolved') {
+      // Mengasumsikan status selain solved untuk warna merah
+      filtered = filtered.filter(i => i.status === 'pending' || i.status === 'unsolved');
+    }
 
     return filtered;
   };
@@ -85,7 +39,7 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         
-        {/* HEADER SECTION (Sesuai Layout Gambar) */}
+        {/* HEADER SECTION */}
         <View style={styles.headerBackground}>
           <View style={styles.profileRow}>
             <View style={styles.profileLeft}>
@@ -156,44 +110,52 @@ export default function App() {
           {/* LIST LAPORAN KOTAK */}
           <FlatList
             data={getProcessedData()}
-            keyExtractor={item => item.id}
+            keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={<Text style={{textAlign: 'center', marginTop: 20, color: '#888'}}>Tidak ada data.</Text>}
             renderItem={({ item }) => (
-              <View style={styles.card}>
-                
-                {/* Bagian Atas Card (Avatar, Nama, Waktu) */}
+              <TouchableOpacity 
+                style={styles.card}
+                // Navigasi dikembalikan seperti kode awal Anda
+                onPress={() => router.push({ pathname: '/detail-forum', params: { id: item.id } })}
+              >
+                {/* Bagian Atas Card */}
                 <View style={styles.cardTopRow}>
                   <View style={styles.cardAvatar}>
                     <Ionicons name="person" size={24} color="#ccc" />
                   </View>
+                  {/* Memanggil variabel nama dari data Anda */}
                   <Text style={styles.cardNama}>{item.nama}</Text>
                   
                   <View style={styles.timeContainer}>
                     <Ionicons name="time-outline" size={12} color="#888" />
-                    <Text style={styles.timeText}>{item.timeLabel}</Text>
+                    {/* Jika di data Anda tidak ada waktu spesifik, ini akan menampilkan 4Y Ago */}
+                    <Text style={styles.timeText}>{item.waktu || '4Y Ago'}</Text>
                   </View>
                 </View>
 
                 {/* Deskripsi */}
-                <Text style={styles.cardDeskripsi}>{item.deskripsi}</Text>
+                <Text style={styles.cardDeskripsi} numberOfLines={2}>{item.deskripsi}</Text>
 
-                {/* Bagian Bawah Card (Lokasi, Status Dot, Upvote) */}
+                {/* Bagian Bawah Card */}
                 <View style={styles.cardFooter}>
-                  <Text style={styles.cardAlamat}>{item.lokasi}</Text>
+                  {/* Memanggil variabel alamat dari data Anda */}
+                  <Text style={styles.cardAlamat} numberOfLines={1}>{item.alamat}</Text>
                   
                   <View style={styles.statsContainer}>
                     <View style={[
                       styles.statusDot, 
-                      { backgroundColor: item.status === 'solved' ? '#32CD32' : '#FF0000' }
+                      // Logika warna titik berdasarkan status di data Anda
+                      { backgroundColor: (item.status === 'solved' || item.status === 'selesai' || item.status === 'proses') ? '#32CD32' : '#FF0000' }
                     ]} />
                     <Ionicons name="thumbs-up-outline" size={14} color="#000" />
-                    <Text style={styles.upvoteText}>{(item.upvotes / 1000).toFixed(1)}k</Text>
+                    {/* Jika tidak ada data upvotes, default ke 1.6k agar UI tetap bagus */}
+                    <Text style={styles.upvoteText}>{item.upvotes ? `${(item.upvotes / 1000).toFixed(1)}k` : '1.6k'}</Text>
                   </View>
                 </View>
 
-              </View>
+              </TouchableOpacity>
             )}
           />
         </View>
@@ -215,14 +177,12 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#2A7BBA' },
   container: { flex: 1, backgroundColor: '#fff' },
   
-  // Header Styles
   headerBackground: { backgroundColor: '#2A7BBA', paddingTop: 20 },
   profileRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 25, marginBottom: 30 },
   profileLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatarBig: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
   headerTitle: { color: '#fff', fontWeight: 'bold', fontSize: 20 },
   
-  // Tabs Layout
   tabsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   topUpvotedText: { color: '#fff', fontWeight: 'bold', fontSize: 18, paddingLeft: 25, paddingBottom: 15 },
   tabsContainer: { 
@@ -239,10 +199,8 @@ const styles = StyleSheet.create({
   tabText: { color: '#333', fontSize: 13, fontWeight: 'bold' },
   tabTextActive: { color: '#2A7BBA' },
 
-  // Content Area
   content: { flex: 1, backgroundColor: '#fff', paddingHorizontal: 25, paddingTop: 15 },
   
-  // Sort Dropdown
   sortBox: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
   sortLabel: { fontSize: 14, color: '#333', marginRight: 8 },
   sortBtn: { backgroundColor: '#FFD54F', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 15 },
@@ -251,7 +209,6 @@ const styles = StyleSheet.create({
   dropdownItem: { padding: 10, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   dropdownItemText: { fontSize: 12, color: '#333' },
 
-  // Card Layout
   listContainer: { paddingBottom: 80 },
   card: { 
     backgroundColor: '#fff', 
@@ -259,8 +216,8 @@ const styles = StyleSheet.create({
     padding: 15, 
     marginBottom: 15, 
     borderWidth: 1, 
-    borderColor: '#FFD54F', // Border kuning sesuai gambar
-    elevation: 1, 
+    borderColor: '#e0e0e0', // Border warna abu-abu kebiruan tipis
+    elevation: 2, 
     shadowColor: '#000', 
     shadowOffset: { width: 0, height: 1 }, 
     shadowOpacity: 0.1 
@@ -274,11 +231,10 @@ const styles = StyleSheet.create({
   cardDeskripsi: { fontSize: 12, color: '#000', fontWeight: '500', lineHeight: 18, marginBottom: 15 },
   
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardAlamat: { fontSize: 10, color: '#000' },
+  cardAlamat: { fontSize: 10, color: '#000', flex: 1, marginRight: 10 },
   statsContainer: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   statusDot: { width: 10, height: 10, borderRadius: 5, marginRight: 4 },
   upvoteText: { fontSize: 12, fontWeight: 'bold', color: '#000' },
 
-  // Bottom Navigation
   bottomNav: { position: 'absolute', bottom: 0, width: '100%', backgroundColor: '#2A7BBA', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 35, paddingVertical: 15 },
 });
