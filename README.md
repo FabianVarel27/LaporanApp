@@ -43,6 +43,8 @@ Aplikasi mobile pelaporan masalah lingkungan berbasis sosial media, dibangun den
 | Nama | NIM | 
 |------|-----|
 | Ignatius Roger Ramopolii | 2802437871 |
+| Marco Alexius | 2802437442 |
+| Fabian Varel Danyswara | 2802507606 |
 | Nama 2 | 123457 | Frontend Developer |
 | Nama 3 | 123458 | UI/UX Designer |
 
